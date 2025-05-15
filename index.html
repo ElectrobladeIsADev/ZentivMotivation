@@ -6,6 +6,15 @@
   <title>Zentiv - Self Motivation</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.8s ease-out both;
+    }
+  </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 text-gray-800 flex flex-col items-center p-4 lg:p-8">
 
@@ -15,10 +24,14 @@
       <button id="close-settings" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">✖️</button>
       <h2 class="text-2xl font-semibold text-indigo-600 mb-4">Settings</h2>
       <div class="space-y-4">
+
+        <!-- User Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700">Your Name</label>
           <input id="user-name-input" type="text" class="mt-1 w-full border-2 border-indigo-200 rounded-2xl p-2 focus:border-indigo-400" />
         </div>
+
+        <!-- Manage Tasks -->
         <div>
           <h3 class="text-lg font-medium">Manage Tasks</h3>
           <form id="settings-task-form" class="mt-2 flex space-x-2">
@@ -26,21 +39,41 @@
             <input id="settings-task-cat" type="text" placeholder="Category" class="w-32 border-2 border-indigo-200 rounded-2xl p-2 focus:border-indigo-400" />
             <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 rounded-2xl">Add</button>
           </form>
+
+          <!-- Bypass Decay Checkbox -->
+          <label class="inline-flex items-center space-x-2 mt-2">
+            <input type="checkbox" id="toggleBypass" checked class="rounded border-indigo-300 text-indigo-600" />
+            <span class="text-sm text-gray-700">Bypass decay when streak is 0 or 1</span>
+          </label>
+
+          <!-- Task List -->
           <ul id="settings-task-list" class="mt-3 space-y-2 max-h-40 overflow-y-auto"></ul>
         </div>
+
+        <!-- Data Export/Import -->
+        <div class="space-y-2">
+          <button id="export-data-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-2xl">Export Data Code</button>
+          <textarea id="export-output" class="w-full border-2 border-indigo-200 rounded-2xl p-2 text-sm" rows="3" readonly placeholder="Your data code will appear here..."></textarea>
+          <input id="import-code-input" type="text" placeholder="Paste import code here" class="w-full border-2 border-indigo-200 rounded-2xl p-2" />
+          <button id="import-data-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-2xl">Import Data</button>
+        </div>
+
         <button id="clear-data-btn" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-2xl">Delete All Data</button>
+        <hr class="my-4">
+
       </div>
     </div>
   </div>
 
   <!-- Header & Title -->
-  <header class="w-full max-w-5xl flex flex-col items-center mb-8 space-y-4 relative">
+  <header class="w-full max-w-5xl flex flex-col items-center mb-8 space-y-4 relative animate-fadeIn">
     <button id="open-settings" class="absolute top-6 left-6 text-xl text-indigo-600 hover:text-indigo-800">☰</button>
     <div class="w-full bg-white shadow-xl rounded-2xl p-6 flex flex-col items-center">
       <h1 class="text-4xl lg:text-5xl font-extrabold text-indigo-700 text-center">Zentiv</h1>
       <div id="user-greeting" class="mt-2 text-lg lg:text-xl text-indigo-600"></div>
     </div>
-    <!-- XP Bar below title -->
+
+    <!-- XP Bar -->
     <div class="w-full bg-white shadow-xl rounded-2xl p-4 flex flex-col items-center">
       <div class="w-full flex justify-between text-indigo-600 font-medium mb-2">
         <span>Level: <span id="level-display">1</span></span>
@@ -52,10 +85,20 @@
     </div>
   </header>
 
+  <!-- Chart Modal -->
+  <div id="chart-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/3 lg:w-1/2 p-6 relative">
+      <button id="close-chart" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">✖️</button>
+      <h2 class="text-2xl font-semibold text-indigo-600 mb-4 text-center">Detailed Stats</h2>
+      <canvas id="statsRadarModal" class="w-full h-96 cursor-pointer"></canvas>
+    </div>
+  </div>
+
   <!-- Main Dashboard -->
   <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+
     <!-- Task Selector -->
-    <section class="bg-white shadow-xl rounded-2xl p-6 lg:col-span-1 flex flex-col items-center">
+    <section class="bg-white shadow-xl rounded-2xl p-6 lg:col-span-1 flex flex-col items-center animate-fadeIn">
       <h2 class="text-2xl font-semibold text-indigo-600 mb-4 text-center">Today's Tasks</h2>
       <select id="task-select" class="w-full p-3 border-2 border-indigo-200 rounded-2xl focus:border-indigo-400 text-base mb-4" multiple size="5"></select>
       <button id="complete-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl font-medium mb-4">Complete Selected</button>
@@ -66,129 +109,320 @@
     </section>
 
     <!-- Radar Chart -->
-    <section class="bg-white shadow-xl rounded-2xl p-6 lg:col-span-2 flex flex-col items-center">
+    <section class="bg-white shadow-xl rounded-2xl p-6 lg:col-span-2 flex flex-col items-center animate-fadeIn">
       <h2 class="text-2xl font-semibold text-indigo-600 mb-2 text-center">Personal Stats</h2>
       <div id="overall-display" class="text-3xl font-bold text-indigo-700 mb-4">Overall Score: <span id="overall-count">0</span></div>
       <div class="relative w-full max-w-2xl h-80 flex items-center justify-center">
         <canvas id="statsRadar" class="w-full h-full"></canvas>
       </div>
-      <!-- Attribute points list -->
       <ul id="attribute-list" class="mt-4 text-base text-indigo-700"></ul>
     </section>
+
   </main>
 
   <script>
-    const STORAGE = { name:'zentiv_name', tasks:'zentiv_tasks', comps:'zentiv_comps', scores:'zentiv_scores', xp:'zentiv_xp' };
+    const STORAGE = {
+      name: 'zentiv_name',
+      tasks: 'zentiv_tasks',
+      comps: 'zentiv_comps',
+      scores: 'zentiv_scores',
+      xp: 'zentiv_xp'
+    };
     let userName = localStorage.getItem(STORAGE.name) || '';
     let tasks = JSON.parse(localStorage.getItem(STORAGE.tasks) || '[]');
     let comps = JSON.parse(localStorage.getItem(STORAGE.comps) || '[]');
     let scores = JSON.parse(localStorage.getItem(STORAGE.scores) || '{}');
-    let xp = parseInt(localStorage.getItem(STORAGE.xp) || '0');
-    const cats = ['Discipline','Fitness','Mindset','Social','Confidence','Intelligence'];
+    let xp = parseInt(localStorage.getItem(STORAGE.xp) || '0', 10);
+    const cats = ['Discipline', 'Fitness', 'Mindset', 'Social', 'Confidence', 'Intelligence'];
 
-    cats.forEach(c=>{ if(scores[c]===undefined) scores[c]=0; });
+    cats.forEach(c => {
+      if (scores[c] === undefined) scores[c] = 0;
+    });
 
     if (!tasks.length) {
       tasks = [
-        {name:'Read a Book',category:'Intelligence'},
-        {name:'Morning Stretch',category:'Fitness'},
-        {name:'Meditation',category:'Mindset'},
-        {name:'Reach Out to Friend',category:'Social'},
-        {name:'Plan Day',category:'Discipline'}
-      ]; localStorage.setItem(STORAGE.tasks,JSON.stringify(tasks));
+        { name: 'Read a Book', category: 'Intelligence' },
+        { name: 'Morning Stretch', category: 'Fitness' },
+        { name: 'Meditation', category: 'Mindset' },
+        { name: 'Reach Out to Friend', category: 'Social' },
+        { name: 'Plan Day', category: 'Discipline' }
+      ];
+      localStorage.setItem(STORAGE.tasks, JSON.stringify(tasks));
     }
 
-    const openBtn = document.getElementById('open-settings');
-    const closeBtn = document.getElementById('close-settings');
-    const modal = document.getElementById('settings-modal');
-    const nameInput = document.getElementById('user-name-input');
-    const greetEl = document.getElementById('user-greeting');
-    const taskSelect = document.getElementById('task-select');
-    const completeBtn = document.getElementById('complete-btn');
-    const streakEl = document.getElementById('streak-count');
-    const overallEl = document.getElementById('overall-count');
-    const streakVis = document.getElementById('streak-visual');
-    const clearBtn = document.getElementById('clear-data-btn');
-    const levelEl = document.getElementById('level-display');
-    const xpEl = document.getElementById('xp-display');
-    const xpNextEl = document.getElementById('xp-next');
-    const xpBar = document.getElementById('xp-bar');
-    const attrList = document.getElementById('attribute-list');
+    const openBtn        = document.getElementById('open-settings');
+    const closeBtn       = document.getElementById('close-settings');
+    const modal          = document.getElementById('settings-modal');
+    const nameInput      = document.getElementById('user-name-input');
+    const greetEl        = document.getElementById('user-greeting');
+    const taskSelect     = document.getElementById('task-select');
+    const completeBtnEl  = document.getElementById('complete-btn');
+    const streakEl       = document.getElementById('streak-count');
+    const overallEl      = document.getElementById('overall-count');
+    const streakVis      = document.getElementById('streak-visual');
+    const clearBtn       = document.getElementById('clear-data-btn');
+    const levelEl        = document.getElementById('level-display');
+    const xpEl           = document.getElementById('xp-display');
+    const xpNextEl       = document.getElementById('xp-next');
+    const xpBar          = document.getElementById('xp-bar');
+    const attrList       = document.getElementById('attribute-list');
+    const sForm          = document.getElementById('settings-task-form');
+    const sList          = document.getElementById('settings-task-list');
+    const sName          = document.getElementById('settings-task-name');
+    const sCat           = document.getElementById('settings-task-cat');
+    const exportBtn      = document.getElementById('export-data-btn');
+    const exportOutput   = document.getElementById('export-output');
+    const importBtn      = document.getElementById('import-data-btn');
+    const importInput    = document.getElementById('import-code-input');
+    const chartModal     = document.getElementById('chart-modal');
+    const closeChartBtn  = document.getElementById('close-chart');
+    let modalChart;
+    const modalCtx       = document.getElementById('statsRadarModal').getContext('2d');
 
-    const sForm = document.getElementById('settings-task-form');
-    const sList = document.getElementById('settings-task-list');
-    const sName = document.getElementById('settings-task-name');
-    const sCat = document.getElementById('settings-task-cat');
-
-    const ctx = document.getElementById('statsRadar').getContext('2d');
-    const statsChart = new Chart(ctx, {
-      type:'radar',
-      data:{ labels:cats, datasets:[{ data:[], fill:true, backgroundColor:'rgba(99,102,241,0.2)', borderColor:'#6366F1', pointBackgroundColor:'#6366F1' }] },
-      options:{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ enabled:false } }, scales:{ r:{ suggestedMin:0, suggestedMax:100 } } }
+    const ctx            = document.getElementById('statsRadar').getContext('2d');
+    const statsChart     = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: cats,
+        datasets: [{
+          data: [],
+          fill: true,
+          backgroundColor: 'rgba(99,102,241,0.2)',
+          borderColor: '#6366F1',
+          pointBackgroundColor: '#6366F1'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        },
+        scales: {
+          r: { suggestedMin: 0, suggestedMax: 100 }
+        }
+      }
     });
 
-    openBtn.onclick = ()=>{ modal.classList.remove('hidden'); nameInput.value=userName; renderSettingsTasks(); };
-    closeBtn.onclick = ()=> modal.classList.add('hidden');
-    clearBtn.onclick = ()=>{ if(confirm('Delete all data? This cannot be undone.')){ localStorage.clear(); location.reload(); }};
+    // Open/close settings
+    openBtn.onclick  = () => { modal.classList.remove('hidden'); nameInput.value = userName; renderSettingsTasks(); };
+    closeBtn.onclick = () => modal.classList.add('hidden');
 
-    nameInput.onchange = ()=>{ userName=nameInput.value; localStorage.setItem(STORAGE.name,userName); renderGreeting(); };
-    function renderGreeting(){
-      const now=new Date();
-      const day=now.toLocaleDateString(undefined,{weekday:'long'});
-      const date=now.toLocaleDateString();
-      const time=now.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
-      greetEl.textContent=`It is ${time} on ${day}, ${date}` + (userName?` — Hello, ${userName}!`:``);
-    }
-
-    function renderSettingsTasks(){ sList.innerHTML=''; tasks.forEach((t,i)=>{ const li=document.createElement('li'); li.className='flex justify-between items-center p-2 border rounded'; li.innerHTML=`<span>${t.name} [${t.category}]</span>`; const del=document.createElement('button'); del.textContent='🗑️'; del.onclick=()=>{ tasks.splice(i,1); saveAll(); renderSettingsTasks(); initMain(); }; li.append(del); sList.append(li); }); }
-    sForm.onsubmit = e=>{ e.preventDefault(); if(sName.value && cats.includes(sCat.value)){ tasks.push({name:sName.value,category:sCat.value}); saveAll(); renderSettingsTasks(); initMain(); } sForm.reset(); };
-
-    function applyDecay(){
-      const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
-      const yStr=yesterday.toISOString().split('T')[0];
-      cats.forEach(cat=>{ if(!comps.some(c=>c.date===yStr&&c.category===cat)){ scores[cat]=Math.max(scores[cat]-3,0); }});
-    }
-
-    function initMain(){
-      renderGreeting(); setInterval(renderGreeting,60000);
-      applyDecay();
-      // populate tasks
-      taskSelect.innerHTML=''; const today=new Date().toISOString().split('T')[0]; const completedToday=comps.filter(c=>c.date===today).map(c=>c.name);
-      tasks.forEach((t,i)=>{ const opt=new Option(t.name,i); if(completedToday.includes(t.name)) opt.disabled=true; taskSelect.append(opt); });
-      // update radar
-      statsChart.data.datasets[0].data=cats.map(c=>scores[c]); statsChart.update();
-      // attribute list
-      attrList.innerHTML=''; cats.forEach(c=>{ const li=document.createElement('li'); li.textContent=`${c}: ${scores[c]}`; attrList.append(li); });
-      // streak
-      const uniq=[...new Set(comps.map(c=>c.date))].sort().reverse(); let streak=0,dp=new Date(); uniq.forEach(d=>{ if(d===dp.toISOString().split('T')[0]){ streak++; dp.setDate(dp.getDate()-1);} }); streakEl.textContent=streak; renderStreakVisual(streak);
-      // overall
-      overallEl.textContent=cats.reduce((sum,c)=>sum+scores[c],0);
-      // level & xp
-      const nextLevel= (Math.floor(xp/10)+1)*10;
-      if(xp>=nextLevel){ xp = xp - nextLevel + 10; }
-      const level=Math.floor(xp/10)+1;
-      levelEl.textContent=level;
-      xpEl.textContent=xp;
-      xpNextEl.textContent=level*10;
-      xpBar.style.width=((xp%10)*10)+'%';
-    }
-
-    completeBtn.onclick = () => {
-      const date=new Date().toISOString().split('T')[0];
-      const selected=Array.from(taskSelect.selectedOptions).map(o=>tasks[o.value]);
-      const already=selected.filter(t=>comps.some(c=>c.date===date&&c.name===t.name));
-      if(already.length){ alert('One or more selected tasks are already done today!'); return; }
-      selected.forEach(t=>{
-        comps.push({date,category:t.category,name:t.name});
-        scores[t.category]=Math.min(scores[t.category]+6,100);
-        xp+=2;
-      });
-      saveAll(); initMain();
+    // Clear all data
+    clearBtn.onclick = () => {
+      if (confirm('Delete all data? This cannot be undone.')) {
+        localStorage.clear();
+        location.reload();
+      }
     };
 
-    function renderStreakVisual(cnt){ streakVis.innerHTML=''; for(let i=0;i<cnt;i++){ const d=document.createElement('div'); d.className='w-3 h-3 bg-indigo-600 rounded-full'; streakVis.append(d);} }
-    function saveAll(){ localStorage.setItem(STORAGE.name,userName); localStorage.setItem(STORAGE.tasks,JSON.stringify(tasks)); localStorage.setItem(STORAGE.comps,JSON.stringify(comps)); localStorage.setItem(STORAGE.scores,JSON.stringify(scores)); localStorage.setItem(STORAGE.xp,xp); }
+    // Export
+    exportBtn.onclick = () => {
+      const data = { name: userName, tasks, comps, scores, xp };
+      exportOutput.value = btoa(JSON.stringify(data));
+    };
 
+    // Import
+    importBtn.onclick = () => {
+      const code = importInput.value.trim();
+      if (!code) return alert('Please paste a code.');
+      try {
+        const data = JSON.parse(atob(code));
+        if (!data.name || !Array.isArray(data.tasks) || !Array.isArray(data.comps) || !data.scores || typeof data.xp !== 'number') {
+          throw new Error('Invalid format');
+        }
+        userName = data.name;
+        tasks    = data.tasks;
+        comps    = data.comps;
+        scores   = data.scores;
+        xp       = data.xp;
+        saveAll();
+        initMain();
+        modal.classList.add('hidden');
+        alert('Data imported successfully!');
+      } catch {
+        alert('Invalid code! Could not import.');
+      }
+    };
+
+    // Add/delete tasks in settings
+    function renderSettingsTasks() {
+      sList.innerHTML = '';
+      tasks.forEach((t, i) => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center p-2 border rounded';
+        li.innerHTML = `<span>${t.name} [${t.category}]</span>`;
+        const del = document.createElement('button');
+        del.textContent = '🗑️';
+        del.onclick = () => {
+          tasks.splice(i, 1);
+          saveAll();
+          renderSettingsTasks();
+          initMain();
+        };
+        li.append(del);
+        sList.append(li);
+      });
+    }
+
+    sForm.onsubmit = e => {
+      e.preventDefault();
+      if (sName.value && cats.includes(sCat.value)) {
+        tasks.push({ name: sName.value, category: sCat.value });
+        saveAll();
+        renderSettingsTasks();
+        initMain();
+      }
+      sForm.reset();
+    };
+
+    // Decay logic: 3-day inactivity, bypass if streak ≤ 1
+    function applyDecay() {
+      const bypass = document.getElementById('toggleBypass').checked;
+
+      // Compute streak
+      const uniqDates = [...new Set(comps.map(c => c.date))].sort().reverse();
+      let streak = 0;
+      let dp = new Date();
+      uniqDates.forEach(d => {
+        if (d === dp.toISOString().split('T')[0]) {
+          streak++;
+          dp.setDate(dp.getDate() - 1);
+        }
+      });
+
+      if (bypass && streak <= 1) return;
+
+      const today = new Date();
+      cats.forEach(cat => {
+        let active = false;
+        for (let i = 1; i <= 3; i++) {
+          const past = new Date(today);
+          past.setDate(today.getDate() - i);
+          const pastStr = past.toISOString().split('T')[0];
+          if (comps.some(c => c.date === pastStr && c.category === cat)) {
+            active = true;
+            break;
+          }
+        }
+        if (!active) {
+          scores[cat] = Math.max(scores[cat] - 3, 0);
+        }
+      });
+    }
+
+    // Initialize main dashboard
+    function initMain() {
+      // Greeting
+      renderGreeting();
+      setInterval(renderGreeting, 60000);
+
+      // Decay
+      applyDecay();
+
+      // Tasks dropdown
+      taskSelect.innerHTML = '';
+      const todayStr = new Date().toISOString().split('T')[0];
+      const doneToday = comps.filter(c => c.date === todayStr).map(c => c.name);
+      tasks.forEach((t, i) => {
+        const opt = new Option(t.name, i);
+        if (doneToday.includes(t.name)) opt.disabled = true;
+        taskSelect.append(opt);
+      });
+
+      // Radar chart
+      statsChart.data.datasets[0].data = cats.map(c => scores[c]);
+      statsChart.update();
+
+      // Attribute list
+      attrList.innerHTML = '';
+      cats.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = `${c}: ${scores[c]}`;
+        attrList.append(li);
+      });
+
+      // Streak display
+      streakEl.textContent = streak;
+      renderStreakVisual(streak);
+
+      // Overall score
+      overallEl.textContent = cats.reduce((sum, c) => sum + scores[c], 0);
+
+      // Level & XP
+    const level = Math.floor(xp / 10) + 1;
+    const currentLevelXP = (level - 1) * 10;
+    const nextLevelXP = level * 10;
+
+    levelEl.textContent = level;
+    xpEl.textContent = xp - currentLevelXP;
+    xpNextEl.textContent = nextLevelXP - currentLevelXP;
+    xpBar.style.width = ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100 + '%';
+
+    }
+
+    // Complete tasks handler
+    completeBtnEl.onclick = () => {
+      const dateStr = new Date().toISOString().split('T')[0];
+      const selected = Array.from(taskSelect.selectedOptions).map(o => tasks[o.value]);
+      const already = selected.filter(t => comps.some(c => c.date === dateStr && c.name === t.name));
+      if (already.length) {
+        return alert('One or more selected tasks are already done today!');
+      }
+      selected.forEach(t => {
+        comps.push({ date: dateStr, category: t.category, name: t.name });
+        scores[t.category] = Math.min(scores[t.category] + 6, 100);
+        xp += 2;
+      });
+      saveAll();
+      initMain();
+    };
+
+    // Streak visual dots
+    function renderStreakVisual(cnt) {
+      streakVis.innerHTML = '';
+      for (let i = 0; i < cnt; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'w-3 h-3 bg-indigo-600 rounded-full';
+        streakVis.append(dot);
+      }
+    }
+
+    // Save to localStorage
+    function saveAll() {
+      localStorage.setItem(STORAGE.name, userName);
+      localStorage.setItem(STORAGE.tasks, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE.comps, JSON.stringify(comps));
+      localStorage.setItem(STORAGE.scores, JSON.stringify(scores));
+      localStorage.setItem(STORAGE.xp, xp);
+    }
+
+    // Greeting renderer
+    function renderGreeting() {
+      const now = new Date();
+      const day = now.toLocaleDateString(undefined, { weekday: 'long' });
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      greetEl.textContent = `It is ${time} on ${day}, ${date}` + (userName ? ` — Hello, ${userName}!` : '');
+    }
+
+    // Chart modal
+    document.getElementById('statsRadar').addEventListener('click', () => {
+      const cfg = {
+        type: statsChart.config.type,
+        data: statsChart.data,
+        options: statsChart.options
+      };
+      if (modalChart) modalChart.destroy();
+      modalChart = new Chart(modalCtx, cfg);
+      chartModal.classList.remove('hidden');
+    });
+    closeChartBtn.addEventListener('click', () => {
+      chartModal.classList.add('hidden');
+      if (modalChart) modalChart.destroy();
+    });
+
+    // Initial load
     initMain();
   </script>
 </body>
