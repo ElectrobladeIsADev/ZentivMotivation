@@ -4,425 +4,148 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zentiv - Self Motivation</title>
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Montserrat:wght@700&display=swap" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0"></script>
   <style>
-    @keyframes fadeIn {
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .title-font { font-family: 'Montserrat', sans-serif; }
+    @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .animate-fadeIn {
-      animation: fadeIn 0.8s ease-out both;
-    }
+    .animate-fadeInUp { animation: fadeInUp 0.8s ease-out both; }
+    /* Modal info styling */
+    #modal-info { background: rgba(255,255,255,0.8); backdrop-filter: blur(4px); padding: 0.5rem 1rem; border-radius: 1rem; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 text-gray-800 flex flex-col items-center p-4 lg:p-8">
 
   <!-- Settings Overlay -->
   <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/3 lg:w-1/2 p-6 relative">
-      <button id="close-settings" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">✖️</button>
-      <h2 class="text-2xl font-semibold text-indigo-600 mb-4">Settings</h2>
-      <div class="space-y-4">
-
+    <div class="bg-white bg-opacity-90 backdrop-blur-md rounded-3xl shadow-2xl w-5/6 sm:w-11/12 md:w-2/3 lg:w-1/2 p-4 sm:p-6 relative max-h-screen overflow-y-auto animate-fadeInUp">
+      <button id="close-settings" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition">✖️</button>
+      <h2 class="text-2xl font-bold text-indigo-600 mb-4 title-font">Settings</h2>
+      <div class="space-y-6">
         <!-- User Name -->
         <div>
-          <label class="block text-sm font-medium text-gray-700">Your Name</label>
-          <input id="user-name-input" type="text" class="mt-1 w-full border-2 border-indigo-200 rounded-2xl p-2 focus:border-indigo-400" />
+          <label class="block text-sm font-semibold text-gray-700">Your Name</label>
+          <input id="user-name-input" type="text" placeholder="Enter your name" title="Your Name" class="mt-1 w-full border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
         </div>
-
         <!-- Manage Tasks -->
         <div>
-          <h3 class="text-lg font-medium">Manage Tasks</h3>
+          <h3 class="text-lg font-semibold title-font">Manage Tasks</h3>
           <form id="settings-task-form" class="mt-2 flex space-x-2">
-            <input id="settings-task-name" type="text" placeholder="Task Name" class="flex-1 border-2 border-indigo-200 rounded-2xl p-2 focus:border-indigo-400" />
-            <input id="settings-task-cat" type="text" placeholder="Category" class="w-32 border-2 border-indigo-200 rounded-2xl p-2 focus:border-indigo-400" />
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 rounded-2xl">Add</button>
+            <input id="settings-task-name" type="text" placeholder="Task Name" class="flex-1 border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
+            <input id="settings-task-cat" type="text" placeholder="Category" class="w-32 border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-2xl font-semibold transition transform hover:scale-105">Add</button>
           </form>
-
-          <!-- Bypass Decay Checkbox -->
-          <label class="inline-flex items-center space-x-2 mt-2">
+          <label class="inline-flex items-center space-x-2 mt-4">
             <input type="checkbox" id="toggleBypass" checked class="rounded border-indigo-300 text-indigo-600" />
-            <span class="text-sm text-gray-700">Bypass decay when streak is 0 or 1</span>
+            <span class="text-sm text-gray-700">Bypass decay when streak ≤ 1</span>
           </label>
-
-          <!-- Task List -->
-          <ul id="settings-task-list" class="mt-3 space-y-2 max-h-40 overflow-y-auto"></ul>
+          <ul id="settings-task-list" class="mt-3 space-y-2 max-h-40 overflow-y-auto text-gray-700"></ul>
         </div>
-
         <!-- Data Export/Import -->
         <div class="space-y-2">
-          <button id="export-data-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-2xl">Export Data Code</button>
-          <textarea id="export-output" class="w-full border-2 border-indigo-200 rounded-2xl p-2 text-sm" rows="3" readonly placeholder="Your data code will appear here..."></textarea>
-          <input id="import-code-input" type="text" placeholder="Paste import code here" class="w-full border-2 border-indigo-200 rounded-2xl p-2" />
-          <button id="import-data-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-2xl">Import Data</button>
+          <button id="export-data-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-semibold transition transform hover:scale-105">Export Data</button>
+          <textarea id="export-output" class="w-full border-2 border-indigo-200 rounded-2xl p-3 text-sm" rows="3" readonly placeholder="Your export code..."></textarea>
+          <input id="import-code-input" type="text" placeholder="Paste import code here" class="w-full border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
+          <button id="import-data-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-2xl font-semibold transition transform hover:scale-105">Import Data</button>
         </div>
-
-        <button id="clear-data-btn" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-2xl">Delete All Data</button>
-        <hr class="my-4">
-
+        <button id="clear-data-btn" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-2xl font-semibold transition transform hover:scale-105">Delete All Data</button>
       </div>
     </div>
   </div>
 
   <!-- Header & Title -->
-  <header class="w-full max-w-5xl flex flex-col items-center mb-8 space-y-4 relative animate-fadeIn">
-    <button id="open-settings" class="absolute top-6 left-6 text-xl text-indigo-600 hover:text-indigo-800">☰</button>
-    <div class="w-full bg-white shadow-xl rounded-2xl p-6 flex flex-col items-center">
-      <h1 class="text-4xl lg:text-5xl font-extrabold text-indigo-700 text-center">Zentiv</h1>
-      <div id="user-greeting" class="mt-2 text-lg lg:text-xl text-indigo-600"></div>
+  <header class="w-full max-w-5xl flex flex-col items-center mb-8 space-y-6 relative animate-fadeInUp">
+    <button id="open-settings" class="absolute top-6 left-6 text-2xl text-indigo-600 hover:text-indigo-800 transition transform hover:scale-110">☰</button>
+    <div class="w-full bg-white bg-opacity-80 backdrop-blur-md shadow-lg rounded-3xl p-8 flex flex-col items-center transform transition hover:shadow-2xl hover:-translate-y-1 animate-fadeInUp">
+      <h1 class="text-5xl font-extrabold text-indigo-700 title-font">Zentiv</h1>
+      <div id="user-greeting" class="mt-3 text-xl text-indigo-600"></div>
     </div>
-
-    <!-- XP Bar -->
-    <div class="w-full bg-white shadow-xl rounded-2xl p-4 flex flex-col items-center">
-      <div class="w-full flex justify-between text-indigo-600 font-medium mb-2">
+    <div class="w-full bg-white bg-opacity-80 backdrop-blur-md shadow-lg rounded-3xl p-6 transform transition hover:shadow-2xl hover:-translate-y-1 animate-fadeInUp">
+      <div class="w-full flex justify-between text-indigo-600 font-semibold mb-3">
         <span>Level: <span id="level-display">1</span></span>
         <span>XP: <span id="xp-display">0</span>/<span id="xp-next">10</span></span>
       </div>
-      <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+      <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
         <div id="xp-bar" class="h-full bg-indigo-500" style="width:0%"></div>
       </div>
     </div>
   </header>
 
+  <!-- Main Dashboard -->
+  <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Task Selector -->
+    <section class="bg-white bg-opacity-80 backdrop-blur-md shadow-lg rounded-3xl p-6 flex flex-col items-center text-center transform transition hover:shadow-2xl hover:-translate-y-1 animate-fadeInUp">
+      <h2 class="text-2xl font-semibold text-indigo-600 mb-4 title-font">Today's Tasks</h2>
+      <select id="task-select" class="w-full p-3 border-2 border-indigo-200 rounded-2xl focus:border-indigo-400 transition text-base mb-4" multiple size="5"></select>
+      <button id="complete-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl font-semibold transition transform hover:scale-105 mb-4">Complete Selected</button>
+      <div class="text-base text-center text-gray-700">
+        <p>Streak: <span id="streak-count">0</span> days</p>
+        <div id="streak-visual" class="flex justify-center space-x-1 mt-3"></div>
+      </div>
+    </section>
+
+    <!-- Radar Chart / Personal Stats -->
+    <section class="lg:col-span-2 bg-white bg-opacity-80 backdrop-blur-md shadow-lg rounded-3xl p-6 flex flex-col items-center text-center transform transition hover:shadow-2xl hover:-translate-y-1 animate-fadeInUp">
+      <h2 class="text-2xl font-semibold text-indigo-600 mb-3 title-font">Personal Stats</h2>
+      <div class="text-3xl font-bold text-indigo-700 mb-4">Overall Score: <span id="overall-count">0</span></div>
+      <div id="radar-container" class="w-full max-w-2xl h-80 flex justify-center items-center cursor-pointer">
+        <canvas id="statsRadar" class="w-full h-full"></canvas>
+      </div>
+      <div id="attribute-list" class="mt-6 grid grid-cols-3 gap-4 w-full max-w-2xl"></div>
+    </section>
+  </main>
+
   <!-- Chart Modal -->
   <div id="chart-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/3 lg:w-1/2 p-6 relative">
-      <button id="close-chart" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">✖️</button>
-      <h2 class="text-2xl font-semibold text-indigo-600 mb-4 text-center">Detailed Stats</h2>
-      <canvas id="statsRadarModal" class="w-full h-96 cursor-pointer"></canvas>
+    <div class="bg-white bg-opacity-90 backdrop-blur-md rounded-3xl shadow-2xl w-5/6 sm:w-11/12 md:w-2/3 lg:w-1/2 p-4 sm:p-6 relative max-h-screen overflow-y-auto animate-fadeInUp">
+      <button id="close-chart" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition">✖️</button>
+      <div id="modal-info" class="absolute top-4 left-4 text-gray-700 text-sm">
+        <div>Name: <span id="modal-name"></span></div>
+        <div>Date: <span id="modal-date"></span></div>
+      </div>
+      <h2 class="text-2xl font-semibold text-indigo-600 mb-4 text-center title-font">Detailed Stats</h2>
+      <canvas id="statsRadarModal" class="w-full h-96 mb-4"></canvas>
+      <div id="modal-attribute-list" class="grid grid-cols-3 gap-4"></div>
     </div>
   </div>
 
-  <!-- Main Dashboard -->
-  <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-    <!-- Task Selector -->
-    <section class="bg-white shadow-xl rounded-2xl p-6 lg:col-span-1 flex flex-col items-center animate-fadeIn">
-      <h2 class="text-2xl font-semibold text-indigo-600 mb-4 text-center">Today's Tasks</h2>
-      <select id="task-select" class="w-full p-3 border-2 border-indigo-200 rounded-2xl focus:border-indigo-400 text-base mb-4" multiple size="5"></select>
-      <button id="complete-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl font-medium mb-4">Complete Selected</button>
-      <div class="text-base text-center">
-        <p>Streak: <span id="streak-count">0</span> days</p>
-        <div id="streak-visual" class="flex justify-center space-x-1 mt-2"></div>
-      </div>
-    </section>
-
-    <!-- Radar Chart -->
-    <section class="bg-white shadow-xl rounded-2xl p-6 lg:col-span-2 flex flex-col items-center animate-fadeIn">
-      <h2 class="text-2xl font-semibold text-indigo-600 mb-2 text-center">Personal Stats</h2>
-      <div id="overall-display" class="text-3xl font-bold text-indigo-700 mb-4">Overall Score: <span id="overall-count">0</span></div>
-      <div class="relative w-full max-w-2xl h-80 flex items-center justify-center">
-        <canvas id="statsRadar" class="w-full h-full"></canvas>
-      </div>
-      <ul id="attribute-list" class="mt-4 text-base text-indigo-700"></ul>
-    </section>
-
-  </main>
-
   <script>
-    const STORAGE = {
-      name: 'zentiv_name',
-      tasks: 'zentiv_tasks',
-      comps: 'zentiv_comps',
-      scores: 'zentiv_scores',
-      xp: 'zentiv_xp'
-    };
-    let userName = localStorage.getItem(STORAGE.name) || '';
-    let tasks = JSON.parse(localStorage.getItem(STORAGE.tasks) || '[]');
-    let comps = JSON.parse(localStorage.getItem(STORAGE.comps) || '[]');
-    let scores = JSON.parse(localStorage.getItem(STORAGE.scores) || '{}');
-    let xp = parseInt(localStorage.getItem(STORAGE.xp) || '0', 10);
-    const cats = ['Discipline', 'Fitness', 'Mindset', 'Social', 'Confidence', 'Intelligence'];
-
-    cats.forEach(c => {
-      if (scores[c] === undefined) scores[c] = 0;
-    });
-
-    if (!tasks.length) {
-      tasks = [
-        { name: 'Read a Book', category: 'Intelligence' },
-        { name: 'Morning Stretch', category: 'Fitness' },
-        { name: 'Meditation', category: 'Mindset' },
-        { name: 'Reach Out to Friend', category: 'Social' },
-        { name: 'Plan Day', category: 'Discipline' }
-      ];
-      localStorage.setItem(STORAGE.tasks, JSON.stringify(tasks));
-    }
-
-    const openBtn        = document.getElementById('open-settings');
-    const closeBtn       = document.getElementById('close-settings');
-    const modal          = document.getElementById('settings-modal');
-    const nameInput      = document.getElementById('user-name-input');
-    const greetEl        = document.getElementById('user-greeting');
-    const taskSelect     = document.getElementById('task-select');
-    const completeBtnEl  = document.getElementById('complete-btn');
-    const streakEl       = document.getElementById('streak-count');
-    const overallEl      = document.getElementById('overall-count');
-    const streakVis      = document.getElementById('streak-visual');
-    const clearBtn       = document.getElementById('clear-data-btn');
-    const levelEl        = document.getElementById('level-display');
-    const xpEl           = document.getElementById('xp-display');
-    const xpNextEl       = document.getElementById('xp-next');
-    const xpBar          = document.getElementById('xp-bar');
-    const attrList       = document.getElementById('attribute-list');
-    const sForm          = document.getElementById('settings-task-form');
-    const sList          = document.getElementById('settings-task-list');
-    const sName          = document.getElementById('settings-task-name');
-    const sCat           = document.getElementById('settings-task-cat');
-    const exportBtn      = document.getElementById('export-data-btn');
-    const exportOutput   = document.getElementById('export-output');
-    const importBtn      = document.getElementById('import-data-btn');
-    const importInput    = document.getElementById('import-code-input');
-    const chartModal     = document.getElementById('chart-modal');
-    const closeChartBtn  = document.getElementById('close-chart');
-    let modalChart;
-    const modalCtx       = document.getElementById('statsRadarModal').getContext('2d');
-
-    const ctx            = document.getElementById('statsRadar').getContext('2d');
-    const statsChart     = new Chart(ctx, {
-      type: 'radar',
-      data: {
-        labels: cats,
-        datasets: [{
-          data: [],
-          fill: true,
-          backgroundColor: 'rgba(99,102,241,0.2)',
-          borderColor: '#6366F1',
-          pointBackgroundColor: '#6366F1'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false }
-        },
-        scales: {
-          r: { suggestedMin: 0, suggestedMax: 100 }
-        }
-      }
-    });
-
-    // Open/close settings
-    openBtn.onclick  = () => { modal.classList.remove('hidden'); nameInput.value = userName; renderSettingsTasks(); };
-    closeBtn.onclick = () => modal.classList.add('hidden');
-
-    // Clear all data
-    clearBtn.onclick = () => {
-      if (confirm('Delete all data? This cannot be undone.')) {
-        localStorage.clear();
-        location.reload();
-      }
-    };
-
-    // Export
-    exportBtn.onclick = () => {
-      const data = { name: userName, tasks, comps, scores, xp };
-      exportOutput.value = btoa(JSON.stringify(data));
-    };
-
-    // Import
-    importBtn.onclick = () => {
-      const code = importInput.value.trim();
-      if (!code) return alert('Please paste a code.');
-      try {
-        const data = JSON.parse(atob(code));
-        if (!data.name || !Array.isArray(data.tasks) || !Array.isArray(data.comps) || !data.scores || typeof data.xp !== 'number') {
-          throw new Error('Invalid format');
-        }
-        userName = data.name;
-        tasks    = data.tasks;
-        comps    = data.comps;
-        scores   = data.scores;
-        xp       = data.xp;
-        saveAll();
-        initMain();
-        modal.classList.add('hidden');
-        alert('Data imported successfully!');
-      } catch {
-        alert('Invalid code! Could not import.');
-      }
-    };
-
-    // Add/delete tasks in settings
-    function renderSettingsTasks() {
-      sList.innerHTML = '';
-      tasks.forEach((t, i) => {
-        const li = document.createElement('li');
-        li.className = 'flex justify-between items-center p-2 border rounded';
-        li.innerHTML = `<span>${t.name} [${t.category}]</span>`;
-        const del = document.createElement('button');
-        del.textContent = '🗑️';
-        del.onclick = () => {
-          tasks.splice(i, 1);
-          saveAll();
-          renderSettingsTasks();
-          initMain();
-        };
-        li.append(del);
-        sList.append(li);
-      });
-    }
-
-    sForm.onsubmit = e => {
-      e.preventDefault();
-      if (sName.value && cats.includes(sCat.value)) {
-        tasks.push({ name: sName.value, category: sCat.value });
-        saveAll();
-        renderSettingsTasks();
-        initMain();
-      }
-      sForm.reset();
-    };
-
-    // Decay logic: 3-day inactivity, bypass if streak ≤ 1
-    function applyDecay() {
-      const bypass = document.getElementById('toggleBypass').checked;
-
-      // Compute streak
-      const uniqDates = [...new Set(comps.map(c => c.date))].sort().reverse();
-      let streak = 0;
-      let dp = new Date();
-      uniqDates.forEach(d => {
-        if (d === dp.toISOString().split('T')[0]) {
-          streak++;
-          dp.setDate(dp.getDate() - 1);
-        }
-      });
-
-      if (bypass && streak <= 1) return;
-
-      const today = new Date();
-      cats.forEach(cat => {
-        let active = false;
-        for (let i = 1; i <= 3; i++) {
-          const past = new Date(today);
-          past.setDate(today.getDate() - i);
-          const pastStr = past.toISOString().split('T')[0];
-          if (comps.some(c => c.date === pastStr && c.category === cat)) {
-            active = true;
-            break;
-          }
-        }
-        if (!active) {
-          scores[cat] = Math.max(scores[cat] - 3, 0);
-        }
-      });
-    }
-
-    // Initialize main dashboard
-    function initMain() {
-      // Greeting
-      renderGreeting();
-      setInterval(renderGreeting, 60000);
-
-      // Decay
-      applyDecay();
-
-      // Tasks dropdown
-      taskSelect.innerHTML = '';
-      const todayStr = new Date().toISOString().split('T')[0];
-      const doneToday = comps.filter(c => c.date === todayStr).map(c => c.name);
-      tasks.forEach((t, i) => {
-        const opt = new Option(t.name, i);
-        if (doneToday.includes(t.name)) opt.disabled = true;
-        taskSelect.append(opt);
-      });
-
-      // Radar chart
-      statsChart.data.datasets[0].data = cats.map(c => scores[c]);
-      statsChart.update();
-
-      // Attribute list
-      attrList.innerHTML = '';
-      cats.forEach(c => {
-        const li = document.createElement('li');
-        li.textContent = `${c}: ${scores[c]}`;
-        attrList.append(li);
-      });
-
-      // Streak display
-      streakEl.textContent = streak;
-      renderStreakVisual(streak);
-
-      // Overall score
-      overallEl.textContent = cats.reduce((sum, c) => sum + scores[c], 0);
-
-      // Level & XP
-    const level = Math.floor(xp / 10) + 1;
-    const currentLevelXP = (level - 1) * 10;
-    const nextLevelXP = level * 10;
-
-    levelEl.textContent = level;
-    xpEl.textContent = xp - currentLevelXP;
-    xpNextEl.textContent = nextLevelXP - currentLevelXP;
-    xpBar.style.width = ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100 + '%';
-
-    }
-
-    // Complete tasks handler
-    completeBtnEl.onclick = () => {
-      const dateStr = new Date().toISOString().split('T')[0];
-      const selected = Array.from(taskSelect.selectedOptions).map(o => tasks[o.value]);
-      const already = selected.filter(t => comps.some(c => c.date === dateStr && c.name === t.name));
-      if (already.length) {
-        return alert('One or more selected tasks are already done today!');
-      }
-      selected.forEach(t => {
-        comps.push({ date: dateStr, category: t.category, name: t.name });
-        scores[t.category] = Math.min(scores[t.category] + 6, 100);
-        xp += 2;
-      });
-      saveAll();
-      initMain();
-    };
-
-    // Streak visual dots
-    function renderStreakVisual(cnt) {
-      streakVis.innerHTML = '';
-      for (let i = 0; i < cnt; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'w-3 h-3 bg-indigo-600 rounded-full';
-        streakVis.append(dot);
-      }
-    }
-
-    // Save to localStorage
-    function saveAll() {
-      localStorage.setItem(STORAGE.name, userName);
-      localStorage.setItem(STORAGE.tasks, JSON.stringify(tasks));
-      localStorage.setItem(STORAGE.comps, JSON.stringify(comps));
-      localStorage.setItem(STORAGE.scores, JSON.stringify(scores));
-      localStorage.setItem(STORAGE.xp, xp);
-    }
-
-    // Greeting renderer
-    function renderGreeting() {
-      const now = new Date();
-      const day = now.toLocaleDateString(undefined, { weekday: 'long' });
-      const date = now.toLocaleDateString();
-      const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-      greetEl.textContent = `It is ${time} on ${day}, ${date}` + (userName ? ` — Hello, ${userName}!` : '');
-    }
-
-    // Chart modal
-    document.getElementById('statsRadar').addEventListener('click', () => {
-      const cfg = {
-        type: statsChart.config.type,
-        data: statsChart.data,
-        options: statsChart.options
-      };
-      if (modalChart) modalChart.destroy();
-      modalChart = new Chart(modalCtx, cfg);
-      chartModal.classList.remove('hidden');
-    });
-    closeChartBtn.addEventListener('click', () => {
-      chartModal.classList.add('hidden');
-      if (modalChart) modalChart.destroy();
-    });
-
-    // Initial load
+    const STORAGE={name:'zentiv_name',tasks:'zentiv_tasks',comps:'zentiv_comps',scores:'zentiv_scores',xp:'zentiv_xp'};
+    let userName=localStorage.getItem(STORAGE.name)||'';
+    let tasks=JSON.parse(localStorage.getItem(STORAGE.tasks)||'[]');
+    let comps=JSON.parse(localStorage.getItem(STORAGE.comps)||'[]');
+    let scores=JSON.parse(localStorage.getItem(STORAGE.scores)||'{}');
+    let xp=parseInt(localStorage.getItem(STORAGE.xp)||'0',10);
+    const cats=['Discipline','Fitness','Mindset','Social','Confidence','Intelligence'];
+    cats.forEach(c=>{if(scores[c]===undefined)scores[c]=0;});
+    if(!tasks.length){tasks=[{name:'Read a Book',category:'Intelligence'},{name:'Morning Stretch',category:'Fitness'},{name:'Meditation',category:'Mindset'},{name:'Reach Out to Friend',category:'Social'},{name:'Plan Day',category:'Discipline'}];localStorage.setItem(STORAGE.tasks,JSON.stringify(tasks));}
+    const refs={openBtn:'#open-settings',closeBtn:'#close-settings',modal:'#settings-modal',nameInput:'#user-name-input',greetEl:'#user-greeting',taskSelect:'#task-select',completeBtn:'#complete-btn',streakEl:'#streak-count',overallEl:'#overall-count',streakVis:'#streak-visual',levelEl:'#level-display',xpEl:'#xp-display',xpNextEl:'#xp-next',xpBar:'#xp-bar',attrList:'#attribute-list',sForm:'#settings-task-form',sList:'#settings-task-list',exportBtn:'#export-data-btn',exportOutput:'#export-output',importBtn:'#import-data-btn',importInput:'#import-code-input',clearBtn:'#clear-data-btn',chartModal:'#chart-modal',closeChartBtn:'#close-chart'};
+    const DOM={};Object.entries(refs).forEach(([k,sel])=>DOM[k]=document.querySelector(sel));
+    const ctx=document.getElementById('statsRadar').getContext('2d');
+    const statsChart=new Chart(ctx,{type:'radar',data:{labels:cats,datasets:[{data:[],fill:true,backgroundColor:'rgba(99,102,241,0.2)',borderColor:'#6366F1',pointBackgroundColor:'#6366F1'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{r:{suggestedMin:0,suggestedMax:100}}}});
+    const modalCtx=document.getElementById('statsRadarModal').getContext('2d');let modalChart;
+    function saveAll(){localStorage.setItem(STORAGE.name,userName);localStorage.setItem(STORAGE.tasks,JSON.stringify(tasks));localStorage.setItem(STORAGE.comps,JSON.stringify(comps));localStorage.setItem(STORAGE.scores,JSON.stringify(scores));localStorage.setItem(STORAGE.xp,xp);}   
+    function getTimeGreeting(){const hr=new Date().getHours();return hr<6?'Good Night':hr<12?'Good Morning':hr<17?'Good Afternoon':hr<21?'Good Evening':'Good Night';}
+    function renderGreeting(){const now=new Date();DOM.greetEl.textContent=`${getTimeGreeting()}${userName?`, ${userName}!`:'!'} It is ${now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} on ${now.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`;}    
+    function renderSettingsTasks(){DOM.sList.innerHTML='';tasks.forEach((t,i)=>{const li=document.createElement('li');li.className='flex justify-between items-center p-2 border rounded';li.innerHTML=`<span>${t.name} [${t.category}]</span>`;const del=document.createElement('button');del.textContent='🗑️';del.onclick=()=>{tasks.splice(i,1);saveAll();renderSettingsTasks();initMain();};li.append(del);DOM.sList.append(li);});}
+    function applyDecay(){const bypass=document.querySelector('#toggleBypass').checked;let dp=new Date(),streak=0;[...new Set(comps.map(c=>c.date))].sort().reverse().forEach(d=>{if(d===dp.toISOString().split('T')[0]){streak++;dp.setDate(dp.getDate()-1);}});if(!(bypass&&streak<=1))cats.forEach(cat=>{let active=false;for(let i=1;i<=3;i++){const past=new Date();past.setDate(new Date().getDate()-i);if(comps.some(c=>c.date===past.toISOString().split('T')[0]&&c.category===cat)){active=true;break;}}!active&&(scores[cat]=Math.max(scores[cat]-3,0));});return streak;}
+    function renderStreakVisual(cnt){DOM.streakVis.innerHTML='';for(let i=0;i<cnt;i++){const dot=document.createElement('div');dot.className='w-3 h-3 bg-indigo-600 rounded-full';DOM.streakVis.append(dot);}}
+    DOM.openBtn.onclick=()=>{DOM.modal.classList.remove('hidden');DOM.nameInput.value=userName;renderSettingsTasks();};
+    DOM.closeBtn.onclick=()=>{userName=DOM.nameInput.value;saveAll();DOM.modal.classList.add('hidden');initMain();};
+    DOM.clearBtn.onclick=()=>{if(confirm('Delete all data? This cannot be undone.')){localStorage.clear();location.reload();}};
+    DOM.exportBtn.onclick=()=>{DOM.exportOutput.value=btoa(JSON.stringify({name:userName,tasks,comps,scores,xp}));};
+    DOM.importBtn.onclick=()=>{try{const d=JSON.parse(atob(DOM.importInput.value.trim()));if(!d.name||!Array.isArray(d.tasks))throw'';userName=d.name;tasks=d.tasks;comps=d.comps;scores=d.scores;xp=d.xp;saveAll();initMain();DOM.modal.classList.add('hidden');alert('Imported!');}catch{alert('Invalid code!');}};
+    DOM.sForm.onsubmit=e=>{e.preventDefault();const n=document.getElementById('settings-task-name').value.trim(),c=document.getElementById('settings-task-cat').value.trim();n&&cats.includes(c)&&(tasks.push({name:n,category:c}),saveAll(),renderSettingsTasks(),initMain());DOM.sForm.reset();};
+    DOM.completeBtn.onclick=()=>{const today=new Date().toISOString().split('T')[0];const sel=Array.from(DOM.taskSelect.selectedOptions).map(o=>tasks[o.value]);if(sel.some(t=>comps.some(c=>c.date===today&&c.name===t.name)))return alert('Already done!');sel.forEach(t=>{comps.push({date:today,category:t.category,name:t.name});scores[t.category]=Math.min(scores[t.category]+6,100);xp+=2;});saveAll();initMain();};
+    document.getElementById('statsRadar').onclick=()=>{if(modalChart)modalChart.destroy();modalChart=new Chart(modalCtx,{type:statsChart.config.type,data:statsChart.data,options:statsChart.options});DOM.chartModal.classList.remove('hidden');};
+    DOM.closeChartBtn.onclick=()=>{DOM.chartModal.classList.add('hidden');modalChart&&modalChart.destroy();};
+    function initMain(){renderGreeting();setInterval(renderGreeting,60000);const streak=applyDecay();renderStreakVisual(streak);DOM.taskSelect.innerHTML='';const today=new Date().toISOString().split('T')[0],done=comps.filter(c=>c.date===today).map(c=>c.name);tasks.forEach((t,i)=>{const o=new Option(t.name,i);done.includes(t.name)&&(o.disabled=true);DOM.taskSelect.append(o);});statsChart.data.datasets[0].data=cats.map(c=>scores[c]);statsChart.update();DOM.attrList.innerHTML='';cats.forEach(c=>{const li=document.createElement('li');li.textContent=`${c}: ${scores[c]}`;DOM.attrList.append(li);});DOM.streakEl.textContent=streak;DOM.overallEl.textContent=cats.reduce((a,c)=>a+scores[c],0);const level=Math.floor(xp/10)+1,cur=(level-1)*10,next=level*10;DOM.levelEl.textContent=level;DOM.xpEl.textContent=xp-cur;DOM.xpNextEl.textContent=next-cur;DOM.xpBar.style.width=((xp-cur)/(next-cur))*100+'%';}
     initMain();
   </script>
 </body>
