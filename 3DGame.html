@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zentiv 3D Motivation Game</title>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+  <!-- A-Frame UI Extras -->
+  <script src="https://cdn.jsdelivr.net/gh/fernandomc/A-Frame-UI-Components/dist/aframe-ui.min.js"></script>
+  <style> body { margin:0; overflow:hidden; } </style>
+</head>
+<body>
+  <a-scene background="color: #ECECEC">
+    <!-- Sky -->
+    <a-sky color="#87CEEB"></a-sky>
+
+    <!-- Ground -->
+    <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
+
+    <!-- Title Floating Text -->
+    <a-text value="Zentiv 3D" position="0 4 -5" align="center" color="#4A148C" width="6"></a-text>
+
+    <!-- Stats Panel -->
+    <a-entity id="stats-panel" position="-3 2 -4">
+      <a-plane width="3" height="2" color="#FFF" opacity="0.8"></a-plane>
+      <a-text id="level-text" value="Level: 1" position="-1.3 0.6 0.01" color="#333" width="2.5"></a-text>
+      <a-text id="xp-text" value="XP: 0/10" position="-1.3 0.2 0.01" color="#333" width="2.5"></a-text>
+    </a-entity>
+
+    <!-- Task Boxes -->
+    <a-entity id="tasks" position="3 1.5 -4">
+      <!-- Example Task -->
+      <a-box id="task-0" position="0 0.5 0" depth="0.2" height="0.5" width="1.5" color="#FFC107" class="clickable">
+        <a-text value="Read a Book" align="center" position="0 0 0.11" width="1.4" color="#000"></a-text>
+      </a-box>
+      <!-- More tasks will be cloned dynamically -->
+    </a-entity>
+
+    <!-- Settings Panel Trigger -->
+    <a-entity id="settings-button" geometry="primitive: plane; width: 1; height: 0.5" material="color: #2196F3" position="0 1 -3" class="clickable">
+      <a-text value="Settings" align="center" position="0 0 0.01" width="1.8" color="#FFF"></a-text>
+    </a-entity>
+
+    <!-- Camera + Cursor -->
+    <a-entity camera look-controls position="0 1.6 0">
+      <a-cursor fuse="true" fuse-timeout="1000" geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015" material="color: #FF0000; shader: flat"></a-cursor>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    // Data model
+    const tasks = [
+      { name: 'Read a Book', category: 'Intelligence' },
+      { name: 'Morning Stretch', category: 'Fitness' },
+      { name: 'Meditation', category: 'Mindset' },
+      { name: 'Reach Out to Friend', category: 'Social' },
+      { name: 'Plan Day', category: 'Discipline' }
+    ];
+    let xp = 0;
+    let level = 1;
+
+    const sceneEl = document.querySelector('a-scene');
+    const tasksContainer = document.getElementById('tasks');
+    const levelText = document.getElementById('level-text');
+    const xpText = document.getElementById('xp-text');
+
+    // Render tasks
+    tasks.forEach((t, i) => {
+      const taskEl = document.getElementById('task-0').cloneNode(true);
+      taskEl.setAttribute('id', `task-${i}`);
+      taskEl.children[0].setAttribute('value', t.name);
+      taskEl.setAttribute('position', `${(i%2)*1.8} ${1 - Math.floor(i/2)*0.8} 0`);
+      taskEl.addEventListener('click', () => completeTask(i));
+      tasksContainer.appendChild(taskEl);
+    });
+    // Remove template
+    const template = document.getElementById('task-0');
+    tasksContainer.removeChild(template);
+
+    function completeTask(index) {
+      xp += 2;
+      if (xp >= level * 10) {
+        level++;
+      }
+      updateStats();
+      // Optional: animate box to disappear
+      const el = document.getElementById(`task-${index}`);
+      el.setAttribute('visible', false);
+    }
+
+    function updateStats() {
+      levelText.setAttribute('value', `Level: ${level}`);
+      xpText.setAttribute('value', `XP: ${xp}/${level*10}`);
+    }
+
+    // Settings button
+    const settingsBtn = document.getElementById('settings-button');
+    settingsBtn.addEventListener('click', () => {
+      alert('Settings panel not yet implemented in 3D.');
+    });
+  </script>
+</body>
+</html>
