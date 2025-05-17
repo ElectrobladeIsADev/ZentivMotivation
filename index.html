@@ -8,9 +8,19 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Montserrat:wght@700&display=swap" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0"></script>
+<script type="module">
+  import { HiSun, HiMoon, HiAcademicCap } from 'https://cdn.skypack.dev/heroicons?min';
+  window.Heroicons = { HiSun, HiMoon, HiAcademicCap };
+</script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .title-font { font-family: 'Montserrat', sans-serif; }
+    .bar-anim { transition: width 0.6s ease-out; }
+
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -33,12 +43,31 @@
           <label class="block text-sm font-semibold text-gray-700">Your Name</label>
           <input id="user-name-input" type="text" placeholder="Enter your name" title="Your Name" class="mt-1 w-full border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
         </div>
+        <div class="absolute top-4 right-4">
+    <button @click="toggleTheme()" class="p-2 bg-white dark:bg-gray-700 rounded-full shadow hover:scale-105 transition" title="Toggle theme">
+      <template x-if="isDark">
+        <i class="hi-sun text-yellow-400 w-6 h-6"></i>
+      </template>
+      <template x-if="!isDark">
+        <i class="hi-moon text-gray-600 w-6 h-6"></i>
+      </template>
+    </button>
+  </div>
         <!-- Manage Tasks -->
         <div>
           <h3 class="text-lg font-semibold title-font">Manage Tasks</h3>
           <form id="settings-task-form" class="mt-2 flex space-x-2">
             <input id="settings-task-name" type="text" placeholder="Task Name" class="flex-1 border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
-            <input id="settings-task-cat" type="text" placeholder="Category" class="w-32 border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition" />
+            <select id="settings-task-cat"
+        class="w-32 border-2 border-indigo-200 rounded-2xl p-3 focus:border-indigo-400 transition bg-white">
+  <option value="" disabled selected>Category</option>
+  <option value="Discipline">Discipline</option>
+  <option value="Fitness">Fitness</option>
+  <option value="Mindset">Mindset</option>
+  <option value="Social">Social</option>
+  <option value="Confidence">Confidence</option>
+  <option value="Intelligence">Intelligence</option>
+</select>
             <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-2xl font-semibold transition transform hover:scale-105">Add</button>
           </form>
           <label class="inline-flex items-center space-x-2 mt-4">
@@ -97,7 +126,7 @@
       <div id="radar-container" class="w-full max-w-2xl h-80 flex justify-center items-center cursor-pointer">
         <canvas id="statsRadar" class="w-full h-full"></canvas>
       </div>
-      <div id="attribute-list" class="mt-6 grid grid-cols-3 gap-4 w-full max-w-2xl"></div>
+    <div id="attribute-list" class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-2xl">
     </section>
   </main>
 
@@ -123,6 +152,53 @@
     let scores=JSON.parse(localStorage.getItem(STORAGE.scores)||'{}');
     let xp=parseInt(localStorage.getItem(STORAGE.xp)||'0',10);
     const cats=['Discipline','Fitness','Mindset','Social','Confidence','Intelligence'];
+    const icons = {
+  Discipline: `
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-500" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M12 9v6m3-3H9"/>
+    </svg>`,
+
+  Fitness: `
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-500" fill="none"
+       viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M6 4v16M18 4v16M2 12h4m12 0h4M8 8l8 8M8 16l8-8"/>
+  </svg>`,
+
+  Mindset: `
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 3v1m0 16v1m8.485-8.485h1M3.515 12.515h1M18.364 5.636l.707.707M5.636 18.364l.707.707M18.364 18.364l-.707.707M5.636 5.636l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"/>
+    </svg>`,
+
+  Social: `
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a4 4 0 00-3-3.874M9 20H4v-2a4 4 0 013-3.874M16 7a4 4 0 11-8 0 4 4 0 018 0zm6 3v1a4 4 0 01-3 3.874M7 10v1a4 4 0 00-3 3.874"/>
+    </svg>`,
+
+  Confidence: `
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-purple-500" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m1-4H5a2 2 0 00-2 2v12l7-3 7 3V6a2 2 0 00-2-2z"/>
+    </svg>`,
+
+  Intelligence: `
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500" fill="none"
+       viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 14l9-5-9-5-9 5 9 5z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 14l6.16 3.422a12.083 12.083 0 01-12.32 0L12 14z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 14V10"/>
+  </svg>`,
+};
     cats.forEach(c=>{if(scores[c]===undefined)scores[c]=0;});
     if(!tasks.length){tasks=[{name:'Read a Book',category:'Intelligence'},{name:'Morning Stretch',category:'Fitness'},{name:'Meditation',category:'Mindset'},{name:'Reach Out to Friend',category:'Social'},{name:'Plan Day',category:'Discipline'}];localStorage.setItem(STORAGE.tasks,JSON.stringify(tasks));}
     const refs={openBtn:'#open-settings',closeBtn:'#close-settings',modal:'#settings-modal',nameInput:'#user-name-input',greetEl:'#user-greeting',taskSelect:'#task-select',completeBtn:'#complete-btn',streakEl:'#streak-count',overallEl:'#overall-count',streakVis:'#streak-visual',levelEl:'#level-display',xpEl:'#xp-display',xpNextEl:'#xp-next',xpBar:'#xp-bar',attrList:'#attribute-list',sForm:'#settings-task-form',sList:'#settings-task-list',exportBtn:'#export-data-btn',exportOutput:'#export-output',importBtn:'#import-data-btn',importInput:'#import-code-input',clearBtn:'#clear-data-btn',chartModal:'#chart-modal',closeChartBtn:'#close-chart'};
@@ -145,7 +221,32 @@
     DOM.completeBtn.onclick=()=>{const today=new Date().toISOString().split('T')[0];const sel=Array.from(DOM.taskSelect.selectedOptions).map(o=>tasks[o.value]);if(sel.some(t=>comps.some(c=>c.date===today&&c.name===t.name)))return alert('Already done!');sel.forEach(t=>{comps.push({date:today,category:t.category,name:t.name});scores[t.category]=Math.min(scores[t.category]+6,100);xp+=2;});saveAll();initMain();};
     document.getElementById('statsRadar').onclick=()=>{if(modalChart)modalChart.destroy();modalChart=new Chart(modalCtx,{type:statsChart.config.type,data:statsChart.data,options:statsChart.options});DOM.chartModal.classList.remove('hidden');};
     DOM.closeChartBtn.onclick=()=>{DOM.chartModal.classList.add('hidden');modalChart&&modalChart.destroy();};
-    function initMain(){renderGreeting();setInterval(renderGreeting,60000);const streak=applyDecay();renderStreakVisual(streak);DOM.taskSelect.innerHTML='';const today=new Date().toISOString().split('T')[0],done=comps.filter(c=>c.date===today).map(c=>c.name);tasks.forEach((t,i)=>{const o=new Option(t.name,i);done.includes(t.name)&&(o.disabled=true);DOM.taskSelect.append(o);});statsChart.data.datasets[0].data=cats.map(c=>scores[c]);statsChart.update();DOM.attrList.innerHTML='';cats.forEach(c=>{const li=document.createElement('li');li.textContent=`${c}: ${scores[c]}`;DOM.attrList.append(li);});DOM.streakEl.textContent=streak;DOM.overallEl.textContent=cats.reduce((a,c)=>a+scores[c],0);const level=Math.floor(xp/10)+1,cur=(level-1)*10,next=level*10;DOM.levelEl.textContent=level;DOM.xpEl.textContent=xp-cur;DOM.xpNextEl.textContent=next-cur;DOM.xpBar.style.width=((xp-cur)/(next-cur))*100+'%';}
+    function renderAttributes() {
+      const container = document.getElementById('attribute-list');
+      container.innerHTML = '';
+      cats.forEach(cat => {
+        const score = scores[cat] || 0;
+        const card = document.createElement('div');
+        card.className = 'bg-white p-4 rounded-2xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1';
+        card.innerHTML = `
+      <div class="flex items-center justify-between mb-2">
+         ${icons[cat] || ''}
+        <span class="font-semibold text-gray-700">${cat}</span>
+        <span class="text-sm font-bold text-indigo-600">${score}</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-green-400 to-blue-500" style="width: ${score}%;"></div>
+      </div>
+    `;
+      
+    container.appendChild(card);
+  });
+
+}
+  function initToolTips(){
+    tippy('[data-tippy-content]', { theme: 'light', animation: 'shift-away' });
+  }
+    function initMain(){renderGreeting();setInterval(renderGreeting,60000);const streak=applyDecay();renderStreakVisual(streak);DOM.taskSelect.innerHTML='';const today=new Date().toISOString().split('T')[0],done=comps.filter(c=>c.date===today).map(c=>c.name);tasks.forEach((t,i)=>{const o=new Option(t.name,i);done.includes(t.name)&&(o.disabled=true);DOM.taskSelect.append(o);});statsChart.data.datasets[0].data=cats.map(c=>scores[c]);statsChart.update();DOM.attrList.innerHTML='';cats.forEach(c=>{const li=document.createElement('li');li.textContent=`${c}: ${scores[c]}`;DOM.attrList.append(li);});DOM.streakEl.textContent=streak;DOM.overallEl.textContent = Math.round((cats.reduce((s,c)=>s+(scores[c]||0),0)/cats.length));const level=Math.floor(xp/10)+1,cur=(level-1)*10,next=level*10;DOM.levelEl.textContent=level;DOM.xpEl.textContent=xp-cur;DOM.xpNextEl.textContent=next-cur;DOM.xpBar.style.width=((xp-cur)/(next-cur))*100+'%'; renderAttributes(); appData(); initToolTips();};
     initMain();
   </script>
 </body>
