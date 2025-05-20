@@ -8,6 +8,13 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Montserrat:wght@700&display=swap" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0"></script>
+<script src="quotes.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    showQuote();
+  });
+</script>
+
 <script type="module">
   import { HiSun, HiMoon, HiAcademicCap } from 'https://cdn.skypack.dev/heroicons?min';
   window.Heroicons = { HiSun, HiMoon, HiAcademicCap };
@@ -95,6 +102,10 @@
       <h1 class="text-5xl font-extrabold text-indigo-700 title-font">Zentiv</h1>
       <div id="user-greeting" class="mt-3 text-xl text-indigo-600"></div>
     </div>
+        <div id="quote-section" class="w-full bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-6 rounded-lg animate-fadeInUp">
+      <p id="quote-text" class="text-lg italic text-center">Loading...</p>
+      <p id="quote-author" class="text-sm text-right font-semibold mt-2"></p>
+    </div>
     <div class="w-full bg-white bg-opacity-80 backdrop-blur-md shadow-lg rounded-3xl p-6 transform transition hover:shadow-2xl hover:-translate-y-1 animate-fadeInUp">
       <div class="w-full flex justify-between text-indigo-600 font-semibold mb-3">
         <span>Level: <span id="level-display">1</span></span>
@@ -105,6 +116,9 @@
       </div>
     </div>
   </header>
+
+      <!-- Motivational Quote Section -->
+
 
   <!-- Main Dashboard -->
   <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -151,6 +165,24 @@
     let comps=JSON.parse(localStorage.getItem(STORAGE.comps)||'[]');
     let scores=JSON.parse(localStorage.getItem(STORAGE.scores)||'{}');
     let xp=parseInt(localStorage.getItem(STORAGE.xp)||'0',10);
+
+    let loginCount = parseInt(localStorage.getItem(STORAGE.loginCount) || '0', 10) + 1;
+    localStorage.setItem(STORAGE.loginCount, loginCount);
+
+function showQuote() {
+  if (!window.quotes || !Array.isArray(window.quotes)) return;
+
+  const idx = (loginCount - 1) % window.quotes.length;
+  const q = window.quotes[idx];
+  const textEl = document.getElementById('quote-text');
+  const authorEl = document.getElementById('quote-author');
+
+  if (textEl && authorEl) {
+    textEl.textContent = `"${q.text}"`;
+    authorEl.textContent = `— ${q.author}`;
+  }
+}
+
     const cats=['Discipline','Fitness','Mindset','Social','Confidence','Intelligence'];
     const icons = {
   Discipline: `
@@ -246,7 +278,7 @@
   function initToolTips(){
     tippy('[data-tippy-content]', { theme: 'light', animation: 'shift-away' });
   }
-    function initMain(){renderGreeting();setInterval(renderGreeting,60000);const streak=applyDecay();renderStreakVisual(streak);DOM.taskSelect.innerHTML='';const today=new Date().toISOString().split('T')[0],done=comps.filter(c=>c.date===today).map(c=>c.name);tasks.forEach((t,i)=>{const o=new Option(t.name,i);done.includes(t.name)&&(o.disabled=true);DOM.taskSelect.append(o);});statsChart.data.datasets[0].data=cats.map(c=>scores[c]);statsChart.update();DOM.attrList.innerHTML='';cats.forEach(c=>{const li=document.createElement('li');li.textContent=`${c}: ${scores[c]}`;DOM.attrList.append(li);});DOM.streakEl.textContent=streak;DOM.overallEl.textContent = Math.round((cats.reduce((s,c)=>s+(scores[c]||0),0)/cats.length));const level=Math.floor(xp/10)+1,cur=(level-1)*10,next=level*10;DOM.levelEl.textContent=level;DOM.xpEl.textContent=xp-cur;DOM.xpNextEl.textContent=next-cur;DOM.xpBar.style.width=((xp-cur)/(next-cur))*100+'%'; renderAttributes(); appData(); initToolTips();};
+    function initMain(){'DOMContentLoaded', () => showQuote();renderGreeting();setInterval(renderGreeting,60000);const streak=applyDecay();renderStreakVisual(streak);DOM.taskSelect.innerHTML='';const today=new Date().toISOString().split('T')[0],done=comps.filter(c=>c.date===today).map(c=>c.name);tasks.forEach((t,i)=>{const o=new Option(t.name,i);done.includes(t.name)&&(o.disabled=true);DOM.taskSelect.append(o);});statsChart.data.datasets[0].data=cats.map(c=>scores[c]);statsChart.update();DOM.attrList.innerHTML='';cats.forEach(c=>{const li=document.createElement('li');li.textContent=`${c}: ${scores[c]}`;DOM.attrList.append(li);});DOM.streakEl.textContent=streak;DOM.overallEl.textContent = Math.round((cats.reduce((s,c)=>s+(scores[c]||0),0)/cats.length));const level=Math.floor(xp/10)+1,cur=(level-1)*10,next=level*10;DOM.levelEl.textContent=level;DOM.xpEl.textContent=xp-cur;DOM.xpNextEl.textContent=next-cur;DOM.xpBar.style.width=((xp-cur)/(next-cur))*100+'%'; renderAttributes(); appData(); initToolTips();};
     initMain();
   </script>
 </body>
